@@ -1,0 +1,24 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - src/
+        - tests/
+    level: 6
+    ignoreErrors:
+        -
+            message: '#has no value type specified in iterable type array#'
+            path: tests/
+        -
+            message: '#Access to an undefined property .+::\$commitCount#'
+            path: tests/
+        -
+            message: '#Access to an undefined property Pest\\PendingCalls\\TestCall::\$app#'
+            path: tests/
+        -
+            message: '#Call to an undefined method Pest\\PendingCalls\\TestCall::artisan\(\)#'
+            path: tests/
+        -
+            message: '#Unable to resolve the template type T(Key|Value|AndValue) in call to (function (collect|expect)|method Pest\\Expectation)#'
+            path: tests/

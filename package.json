@@ -1,0 +1,8 @@
+{
+    "name": "@deegitalbe/laravel-trustup-io-notifications",
+    "version": "0.3.0",
+    "private": true,
+    "dependencies": {
+        "@deegitalbe/laravel-trustup-io-notifications-contracts": "workspace:*"
+    }
+}
