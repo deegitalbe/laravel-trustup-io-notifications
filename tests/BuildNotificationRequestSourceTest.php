@@ -19,7 +19,7 @@ it('uses the recipient source when the recipient already has a source', function
     config(['trustup-io-notifications.source' => null]);
 
     $recipient = Recipient::identified('user-1', Source::Tools);
-    $data = new ToolsTestNotificationData('Title', 'Body');
+    $data = new ToolsTestNotificationData('https://example.test', 'Title', 'Body');
 
     $envelope = app(BuildNotificationRequest::class)->execute($data, $recipient, null);
 
@@ -39,7 +39,7 @@ it('falls back to config source when anonymous recipient has no source', functio
     config(['trustup-io-notifications.source' => Source::Tools->value]);
 
     $recipient = Recipient::anonymous('anon@example.com', null, [], locale: 'fr-BE');
-    $data = new ToolsTestNotificationData('Title', 'Body');
+    $data = new ToolsTestNotificationData('https://example.test', 'Title', 'Body');
 
     $envelope = app(BuildNotificationRequest::class)->execute($data, $recipient, null);
 
@@ -55,7 +55,7 @@ it('falls back to config source when an identified recipient has no source', fun
     config(['trustup-io-notifications.source' => Source::Tools->value]);
 
     $recipient = Recipient::identified('user-1');
-    $data = new ToolsTestNotificationData('Title', 'Body');
+    $data = new ToolsTestNotificationData('https://example.test', 'Title', 'Body');
 
     $envelope = app(BuildNotificationRequest::class)->execute($data, $recipient, null);
 
@@ -77,7 +77,7 @@ it('throws MissingSourceException when neither recipient source nor config sourc
     config(['trustup-io-notifications.source' => null]);
 
     $recipient = Recipient::anonymous('anon@example.com', null, [], locale: 'fr-BE');
-    $data = new ToolsTestNotificationData('Title', 'Body');
+    $data = new ToolsTestNotificationData('https://example.test', 'Title', 'Body');
 
     expect(fn () => app(BuildNotificationRequest::class)->execute($data, $recipient, null))
         ->toThrow(MissingSourceException::class);

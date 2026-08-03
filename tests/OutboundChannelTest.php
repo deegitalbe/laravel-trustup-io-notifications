@@ -52,7 +52,7 @@ function makeConformingNotification(
 
         public function toTrustupIoNotificationsData(): NotificationData
         {
-            return new ToolsTestNotificationData('Test Title', 'Test Body');
+            return new ToolsTestNotificationData('https://example.test', 'Test Title', 'Test Body');
         }
 
         public function restrictTrustupIoNotificationsChannels(): ?array
@@ -90,7 +90,7 @@ it('publishes one event to the request topic with correct fields when sent to an
                 && ($body['payload']['recipient']['identified'] ?? null) === true
                 && ($body['payload']['recipient']['source'] ?? null) === Source::Tools->value
                 && ($body['payload']['recipient']['external_user_id'] ?? null) === 'user-42'
-                && ($body['payload']['data'] ?? null) === ['title' => 'Test Title', 'body' => 'Test Body']
+                && ($body['payload']['data'] ?? null) === ['base_url' => 'https://example.test', 'title' => 'Test Title', 'body' => 'Test Body']
                 && array_key_exists('channels', (array) ($body['payload'] ?? []))
                 && ($body['payload']['channels'] === null);
         },
@@ -250,7 +250,7 @@ it('publishes with null channels when notification uses InteractsWithTrustupIoNo
 
         public function toTrustupIoNotificationsData(): NotificationData
         {
-            return new ToolsTestNotificationData('Title', 'Body');
+            return new ToolsTestNotificationData('https://example.test', 'Title', 'Body');
         }
     };
 

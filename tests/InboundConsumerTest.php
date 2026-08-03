@@ -47,7 +47,7 @@ function makeStatusEnvelopeBody(
         channel: $channel,
         status: $status,
         type: $type,
-        data: $type->dataClass()::fromArray(['title' => $title, 'body' => $body]),
+        data: $type->dataClass()::fromArray(['base_url' => 'https://example.test', 'title' => $title, 'body' => $body]),
     );
 
     $envelope = new Envelope(
@@ -178,7 +178,7 @@ it('dispatches TrustupIoNotificationStatusReceived event carrying the full Statu
         channel: NotificationChannel::Sms,
         status: NotificationStatus::Error,
         type: NotificationType::ToolsTestNotification,
-        data: NotificationType::ToolsTestNotification->dataClass()::fromArray(['title' => 'Hi', 'body' => 'Body']),
+        data: NotificationType::ToolsTestNotification->dataClass()::fromArray(['base_url' => 'https://example.test', 'title' => 'Hi', 'body' => 'Body']),
     );
 
     $job = new HandleNotificationStatusJob($payload);
@@ -201,7 +201,7 @@ it('dispatches the status event with no listeners registered without error', fun
         channel: NotificationChannel::Push,
         status: NotificationStatus::Pending,
         type: NotificationType::ToolsTestNotification,
-        data: NotificationType::ToolsTestNotification->dataClass()::fromArray(['title' => 'Hi', 'body' => 'Body']),
+        data: NotificationType::ToolsTestNotification->dataClass()::fromArray(['base_url' => 'https://example.test', 'title' => 'Hi', 'body' => 'Body']),
     );
 
     $job = new HandleNotificationStatusJob($payload);
@@ -248,7 +248,7 @@ it('skips message and commits offset without dispatching a job when envelope pay
     $requestPayload = new RequestPayload(
         type: NotificationType::ToolsTestNotification,
         recipient: Recipient::identified('user-42', Source::Tools),
-        data: new ToolsTestNotificationData('Title', 'Body'),
+        data: new ToolsTestNotificationData('https://example.test', 'Title', 'Body'),
         channels: null,
     );
 
@@ -358,7 +358,7 @@ function makeEngagementEnvelopeBody(
         channel: $channel,
         kind: $kind,
         type: $type,
-        data: $type->dataClass()::fromArray(['title' => 'T', 'body' => 'B']),
+        data: $type->dataClass()::fromArray(['base_url' => 'https://example.test', 'title' => 'T', 'body' => 'B']),
         clickedUrl: $clickedUrl,
     );
 
@@ -426,7 +426,7 @@ it('AC-17 HandleNotificationEngagementJob fires TrustupIoNotificationEngagementR
         channel: NotificationChannel::Email,
         kind: ChannelEventKind::Clicked,
         type: NotificationType::ToolsTestNotification,
-        data: NotificationType::ToolsTestNotification->dataClass()::fromArray(['title' => 'T', 'body' => 'B']),
+        data: NotificationType::ToolsTestNotification->dataClass()::fromArray(['base_url' => 'https://example.test', 'title' => 'T', 'body' => 'B']),
         clickedUrl: 'https://example.com/link',
     );
 

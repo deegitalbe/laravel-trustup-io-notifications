@@ -29,7 +29,7 @@ function makeTraitNotification(): Notification
 
         public function toTrustupIoNotificationsData(): NotificationData
         {
-            return new ToolsTestNotificationData('Title', 'Body');
+            return new ToolsTestNotificationData('https://example.test', 'Title', 'Body');
         }
     };
 }
