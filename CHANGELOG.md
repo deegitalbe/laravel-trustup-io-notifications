@@ -1,5 +1,12 @@
 # @deegitalbe/laravel-trustup-io-notifications
 
+## 0.5.12
+
+### Patch Changes
+
+- Updated dependencies [1f193ba]
+  - @deegitalbe/laravel-trustup-io-notifications-contracts@2.0.0
+
 ## 0.5.11
 
 ### Patch Changes
