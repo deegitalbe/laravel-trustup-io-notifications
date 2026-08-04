@@ -9,8 +9,8 @@ use Deegitalbe\TrustupIoNotificationsContracts\Enums\NotificationChannel;
 
 interface SendsTrustupIoNotification
 {
-    public function toTrustupIoNotificationsData(): NotificationData;
+    public function toTrustupIoNotificationsData(object $notifiable): NotificationData;
 
     /** @return list<NotificationChannel>|null */
-    public function restrictTrustupIoNotificationsChannels(): ?array;
+    public function restrictTrustupIoNotificationsChannels(object $notifiable): ?array;
 }

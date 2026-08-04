@@ -50,12 +50,12 @@ function makeConformingNotification(
             return [TrustupIoNotificationsChannel::class];
         }
 
-        public function toTrustupIoNotificationsData(): NotificationData
+        public function toTrustupIoNotificationsData(object $notifiable): NotificationData
         {
             return new ToolsTestNotificationData('https://example.test', 'Test Title', 'Test Body');
         }
 
-        public function restrictTrustupIoNotificationsChannels(): ?array
+        public function restrictTrustupIoNotificationsChannels(object $notifiable): ?array
         {
             if ($this->restrictedChannels === 'default') {
                 return null;
@@ -65,6 +65,168 @@ function makeConformingNotification(
         }
     };
 }
+
+/**
+ * Notifiable carrying a title, so a notification can derive a per-recipient payload from it.
+ */
+function makeTitledNotifiable(string $title): object
+{
+    return new class($title)
+    {
+        public function __construct(public readonly string $title) {}
+
+        public function routeNotificationForTrustupIoNotifications(Notification $notification): Recipient
+        {
+            return Recipient::identified('user-42', Source::Tools);
+        }
+    };
+}
+
+/**
+ * Notifiable carrying its own allowed channel list, so a notification can derive a
+ * per-recipient restriction from it.
+ *
+ * @param  list<NotificationChannel>  $allowedChannels
+ */
+function makeRestrictingNotifiable(array $allowedChannels): object
+{
+    return new class($allowedChannels)
+    {
+        /** @param list<NotificationChannel> $allowedChannels */
+        public function __construct(public readonly array $allowedChannels) {}
+
+        public function routeNotificationForTrustupIoNotifications(Notification $notification): Recipient
+        {
+            return Recipient::identified('user-42', Source::Tools);
+        }
+    };
+}
+
+// -------------------------------------------------------------------------
+// Cycle 1: Payload varies by notifiable (AC-1, AC-3)
+// -------------------------------------------------------------------------
+it('publishes the payload derived from the notifiable it was sent to when the notification varies its data per notifiable', function (): void {
+    Kafka::fake();
+
+    $notifiableA = makeTitledNotifiable('Title for A');
+    $notification = new class extends Notification implements SendsTrustupIoNotification
+    {
+        use InteractsWithTrustupIoNotifications;
+
+        public function via(object $notifiable): array
+        {
+            return [TrustupIoNotificationsChannel::class];
+        }
+
+        public function toTrustupIoNotificationsData(object $notifiable): NotificationData
+        {
+            return new ToolsTestNotificationData('https://example.test', $notifiable->title, 'Test Body');
+        }
+    };
+
+    app(TrustupIoNotificationsChannel::class)->send($notifiableA, $notification);
+
+    Kafka::assertPublishedOn(
+        topic: config('trustup-io-notifications.topics.request'),
+        callback: function ($message): bool {
+            /** @var array<string, mixed> $body */
+            $body = (array) $message->getBody();
+
+            return ($body['payload']['data'] ?? null) === [
+                'base_url' => 'https://example.test',
+                'title' => 'Title for A',
+                'body' => 'Test Body',
+            ];
+        },
+    );
+
+    Kafka::assertPublishedTimes(1);
+});
+
+// -------------------------------------------------------------------------
+// Cycle 2: Channel restriction varies by notifiable (AC-2, AC-4)
+// -------------------------------------------------------------------------
+it('publishes the channel restriction derived from the notifiable it was sent to when the notification varies its restriction per notifiable', function (): void {
+    Kafka::fake();
+
+    $smsOnlyNotifiable = makeRestrictingNotifiable([NotificationChannel::Sms]);
+    $notification = new class extends Notification implements SendsTrustupIoNotification
+    {
+        public function via(object $notifiable): array
+        {
+            return [TrustupIoNotificationsChannel::class];
+        }
+
+        public function toTrustupIoNotificationsData(object $notifiable): NotificationData
+        {
+            return new ToolsTestNotificationData('https://example.test', 'Test Title', 'Test Body');
+        }
+
+        public function restrictTrustupIoNotificationsChannels(object $notifiable): ?array
+        {
+            return $notifiable->allowedChannels;
+        }
+    };
+
+    app(TrustupIoNotificationsChannel::class)->send($smsOnlyNotifiable, $notification);
+
+    Kafka::assertPublishedOn(
+        topic: config('trustup-io-notifications.topics.request'),
+        callback: function ($message): bool {
+            /** @var array<string, mixed> $body */
+            $body = (array) $message->getBody();
+
+            return ($body['payload']['channels'] ?? null) === ['sms'];
+        },
+    );
+
+    Kafka::assertPublishedTimes(1);
+});
+
+// -------------------------------------------------------------------------
+// Cycle 3: Anonymous path forwards the AnonymousNotifiable instance (AC-5)
+// -------------------------------------------------------------------------
+it('passes the same AnonymousNotifiable instance to both contract methods and still publishes on the anonymous path', function (): void {
+    Kafka::fake();
+
+    config(['trustup-io-notifications.source' => Source::Tools->value]);
+
+    $notification = new class extends Notification implements SendsTrustupIoNotification
+    {
+        public ?object $dataNotifiable = null;
+
+        public ?object $restrictionNotifiable = null;
+
+        public function via(object $notifiable): array
+        {
+            return [TrustupIoNotificationsChannel::class];
+        }
+
+        public function toTrustupIoNotificationsData(object $notifiable): NotificationData
+        {
+            $this->dataNotifiable = $notifiable;
+
+            return new ToolsTestNotificationData('https://example.test', 'Test Title', 'Test Body');
+        }
+
+        public function restrictTrustupIoNotificationsChannels(object $notifiable): ?array
+        {
+            $this->restrictionNotifiable = $notifiable;
+
+            return null;
+        }
+    };
+
+    $anonymousNotifiable = new AnonymousNotifiable;
+    $anonymousNotifiable->route('trustup-io-notifications', Recipient::anonymous('anon@example.com', null, [], locale: 'fr-BE'));
+
+    app(TrustupIoNotificationsChannel::class)->send($anonymousNotifiable, $notification);
+
+    expect($notification->dataNotifiable)->toBe($anonymousNotifiable)
+        ->and($notification->restrictionNotifiable)->toBe($anonymousNotifiable);
+
+    Kafka::assertPublishedTimes(1);
+});
 
 // -------------------------------------------------------------------------
 // Cycle 4: Nominal identified recipient, no restriction
@@ -248,7 +410,7 @@ it('publishes with null channels when notification uses InteractsWithTrustupIoNo
             return [TrustupIoNotificationsChannel::class];
         }
 
-        public function toTrustupIoNotificationsData(): NotificationData
+        public function toTrustupIoNotificationsData(object $notifiable): NotificationData
         {
             return new ToolsTestNotificationData('https://example.test', 'Title', 'Body');
         }

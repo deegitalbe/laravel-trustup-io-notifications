@@ -28,9 +28,9 @@ class TrustupIoNotificationsChannel
 
         $recipient = $this->resolveRecipient($notifiable, $notification);
 
-        $data = $notification->toTrustupIoNotificationsData();
+        $data = $notification->toTrustupIoNotificationsData($notifiable);
 
-        $channels = $notification->restrictTrustupIoNotificationsChannels();
+        $channels = $notification->restrictTrustupIoNotificationsChannels($notifiable);
 
         $envelope = $this->buildNotificationRequest->execute($data, $recipient, $channels);
 

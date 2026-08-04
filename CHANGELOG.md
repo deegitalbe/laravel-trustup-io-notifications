@@ -1,5 +1,17 @@
 # @deegitalbe/laravel-trustup-io-notifications
 
+## 1.0.0
+
+### Major Changes
+
+- 970a5b8: Pass the notifiable to both `SendsTrustupIoNotification` methods, so a host notification can derive its payload and its channel restriction from the recipient instead of constructor state alone.
+
+  - `toTrustupIoNotificationsData()` now takes a required `object $notifiable`.
+  - `restrictTrustupIoNotificationsChannels()` now takes a required `object $notifiable`.
+  - `TrustupIoNotificationsChannel::send()` forwards the notifiable it received to both calls, on the model path and on the `AnonymousNotifiable` path alike.
+  - `InteractsWithTrustupIoNotifications` mirrors the parameter on its default restriction, which still returns `null`.
+  - Breaking: every host notification implementing the contract must add the parameter to both methods. The parameter is typed `object` because the channel also accepts Laravel's `AnonymousNotifiable`.
+
 ## 0.5.12
 
 ### Patch Changes

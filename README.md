@@ -52,7 +52,7 @@ Three pieces: a **notification** class, a **notifiable** that knows its recipien
 
 ### The notification
 
-The notification receives your own domain models and derives the `NotificationData` from them inside `toTrustupIoNotificationsData()`. You do not pass the data object in from the outside.
+The notification receives your own domain models and derives the `NotificationData` from them inside `toTrustupIoNotificationsData()`. You do not pass the data object in from the outside. Both `toTrustupIoNotificationsData()` and `restrictTrustupIoNotificationsChannels()` receive the notifiable being notified, so the payload and the channel restriction can depend on the recipient.
 
 ```php
 use App\Models\Comment;
@@ -74,7 +74,7 @@ class CommentNotification extends Notification implements SendsTrustupIoNotifica
         return [TrustupIoNotificationsChannel::class];
     }
 
-    public function toTrustupIoNotificationsData(): NotificationData
+    public function toTrustupIoNotificationsData(object $notifiable): NotificationData
     {
         return new ToolsCommentNotificationData(
             product_url: $this->comment->product->url,
@@ -92,8 +92,8 @@ class CommentNotification extends Notification implements SendsTrustupIoNotifica
 }
 ```
 
-- Implement `SendsTrustupIoNotification`; `toTrustupIoNotificationsData()` maps your models to the typed payload.
-- `use InteractsWithTrustupIoNotifications` to get the default "all channels" behavior; without it you must implement `restrictTrustupIoNotificationsChannels()` yourself.
+- Implement `SendsTrustupIoNotification`; `toTrustupIoNotificationsData(object $notifiable)` maps your models to the typed payload, and receives the notifiable so the payload can depend on the recipient.
+- `use InteractsWithTrustupIoNotifications` to get the default "all channels" behavior; without it you must implement `restrictTrustupIoNotificationsChannels(object $notifiable)` yourself.
 - Reference the channel by class in `via()`.
 - The `NotificationData` class (`ToolsCommentNotificationData` here) comes from the contracts package; see its README to define your own.
 
@@ -198,7 +198,7 @@ By default a notification goes out on every channel its data class supports. Ove
 ```php
 use Deegitalbe\TrustupIoNotificationsContracts\Enums\NotificationChannel;
 
-public function restrictTrustupIoNotificationsChannels(): ?array
+public function restrictTrustupIoNotificationsChannels(object $notifiable): ?array
 {
     return [NotificationChannel::Email]; // email only, even if the data class also supports sms/push
 }

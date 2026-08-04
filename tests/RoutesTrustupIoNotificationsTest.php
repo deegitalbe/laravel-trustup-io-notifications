@@ -27,7 +27,7 @@ function makeTraitNotification(): Notification
             return [TrustupIoNotificationsChannel::class];
         }
 
-        public function toTrustupIoNotificationsData(): NotificationData
+        public function toTrustupIoNotificationsData(object $notifiable): NotificationData
         {
             return new ToolsTestNotificationData('https://example.test', 'Title', 'Body');
         }
