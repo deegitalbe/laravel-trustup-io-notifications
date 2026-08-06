@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Deegitalbe\TrustupIoNotificationsClient\Console;
 
 use Deegitalbe\TrustupIoNotificationsClient\Kafka\Handlers\ConsumeStatusHandler;
+use Deegitalbe\TrustupIoNotificationsContracts\Kafka\KafkaFactory;
 use Illuminate\Console\Command;
-use Junges\Kafka\Facades\Kafka;
 use RuntimeException;
 
 class ConsumeStatusesCommand extends Command
@@ -15,16 +15,18 @@ class ConsumeStatusesCommand extends Command
 
     protected $description = 'Consume inbound notification status events from Kafka.';
 
-    public function __construct(private readonly ConsumeStatusHandler $handler)
-    {
+    public function __construct(
+        private readonly ConsumeStatusHandler $handler,
+        private readonly KafkaFactory $kafkaFactory,
+    ) {
         parent::__construct();
     }
 
     public function handle(): void
     {
-        $consumer = Kafka::consumer([config('trustup-io-notifications.topics.status')])
+        $consumer = $this->kafkaFactory->consumer([config('trustup-io-notifications-contracts.topics.status')])
             ->withManualCommit()
-            ->withDlq(config('trustup-io-notifications.topics.dlq'))
+            ->withDlq(config('trustup-io-notifications-contracts.topics.dlq'))
             ->withHandler($this->handler)
             ->onStopConsuming(function (): void {
                 report(new RuntimeException('trustup-io-notifications:consume-statuses stopped consuming.'));

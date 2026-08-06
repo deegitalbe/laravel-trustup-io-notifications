@@ -1,5 +1,17 @@
 # @deegitalbe/laravel-trustup-io-notifications
 
+## 1.0.3
+
+### Patch Changes
+
+- f4562d2: Publish and consume through the contracts KafkaFactory
+
+  - Replace the bare `Kafka::` producer and consumer calls with the injected contracts `KafkaFactory`, so publishing a request and consuming statuses/engagements authenticate against SASL brokers (Azure Event Hubs).
+  - Read the Kafka connection and topics from the contracts-owned config; the client keeps its own `trustup-io-notifications` config for the `source` it stamps on outgoing events (the producer's identity, read only by the client).
+
+- Updated dependencies [f4562d2]
+  - @deegitalbe/laravel-trustup-io-notifications-contracts@3.2.0
+
 ## 1.0.2
 
 ### Patch Changes

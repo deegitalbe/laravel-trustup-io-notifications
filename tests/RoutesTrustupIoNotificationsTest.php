@@ -51,7 +51,7 @@ it('routes to the recipient returned by toTrustupIoNotificationsRecipient when u
     app(TrustupIoNotificationsChannel::class)->send($notifiable, makeTraitNotification());
 
     Kafka::assertPublishedOn(
-        topic: config('trustup-io-notifications.topics.request'),
+        topic: config('trustup-io-notifications-contracts.topics.request'),
         callback: function ($message): bool {
             /** @var array<string, mixed> $body */
             $body = (array) $message->getBody();

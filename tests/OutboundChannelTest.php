@@ -127,7 +127,7 @@ it('publishes the payload derived from the notifiable it was sent to when the no
     app(TrustupIoNotificationsChannel::class)->send($notifiableA, $notification);
 
     Kafka::assertPublishedOn(
-        topic: config('trustup-io-notifications.topics.request'),
+        topic: config('trustup-io-notifications-contracts.topics.request'),
         callback: function ($message): bool {
             /** @var array<string, mixed> $body */
             $body = (array) $message->getBody();
@@ -171,7 +171,7 @@ it('publishes the channel restriction derived from the notifiable it was sent to
     app(TrustupIoNotificationsChannel::class)->send($smsOnlyNotifiable, $notification);
 
     Kafka::assertPublishedOn(
-        topic: config('trustup-io-notifications.topics.request'),
+        topic: config('trustup-io-notifications-contracts.topics.request'),
         callback: function ($message): bool {
             /** @var array<string, mixed> $body */
             $body = (array) $message->getBody();
@@ -240,7 +240,7 @@ it('publishes one event to the request topic with correct fields when sent to an
     app(TrustupIoNotificationsChannel::class)->send($notifiable, $notification);
 
     Kafka::assertPublishedOn(
-        topic: config('trustup-io-notifications.topics.request'),
+        topic: config('trustup-io-notifications-contracts.topics.request'),
         callback: function ($message): bool {
             /** @var array<string, mixed> $body */
             $body = (array) $message->getBody();
@@ -277,7 +277,7 @@ it('publishes one event with anonymous recipient shape when sent via Notificatio
     app(TrustupIoNotificationsChannel::class)->send($anonymousNotifiable, $notification);
 
     Kafka::assertPublishedOn(
-        topic: config('trustup-io-notifications.topics.request'),
+        topic: config('trustup-io-notifications-contracts.topics.request'),
         callback: function ($message): bool {
             /** @var array<string, mixed> $body */
             $body = (array) $message->getBody();
@@ -304,7 +304,7 @@ it('publishes with channels set to [sms] when notification restricts to Sms chan
     app(TrustupIoNotificationsChannel::class)->send($notifiable, $notification);
 
     Kafka::assertPublishedOn(
-        topic: config('trustup-io-notifications.topics.request'),
+        topic: config('trustup-io-notifications-contracts.topics.request'),
         callback: function ($message): bool {
             /** @var array<string, mixed> $body */
             $body = (array) $message->getBody();
@@ -383,7 +383,7 @@ it('throws InvalidRecipientException when anonymous recipient is created with no
 it('throws MissingTopicConfigException when topics request config is null at send time', function (): void {
     Kafka::fake();
 
-    config(['trustup-io-notifications.topics.request' => null]);
+    config(['trustup-io-notifications-contracts.topics.request' => null]);
 
     $notifiable = makeIdentifiedNotifiable();
     $notification = makeConformingNotification();
@@ -419,7 +419,7 @@ it('publishes with null channels when notification uses InteractsWithTrustupIoNo
     app(TrustupIoNotificationsChannel::class)->send($notifiable, $notification);
 
     Kafka::assertPublishedOn(
-        topic: config('trustup-io-notifications.topics.request'),
+        topic: config('trustup-io-notifications-contracts.topics.request'),
         callback: function ($message): bool {
             /** @var array<string, mixed> $body */
             $body = (array) $message->getBody();
