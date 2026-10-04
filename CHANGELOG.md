@@ -1,5 +1,16 @@
 # @deegitalbe/laravel-trustup-io-notifications
 
+## 1.0.15
+
+### Patch Changes
+
+- fbce72e: Follow the contracts V3 email fields and notification types
+
+  The client carries no code change: it picks up the new `NotificationType` cases and the nullable `*NotificationData` fields from the contracts package.
+
+- Updated dependencies [fbce72e]
+  - @deegitalbe/laravel-trustup-io-notifications-contracts@3.11.0
+
 ## 1.0.14
 
 ### Patch Changes
