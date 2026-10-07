@@ -1,5 +1,16 @@
 # @deegitalbe/laravel-trustup-io-notifications
 
+## 1.0.17
+
+### Patch Changes
+
+- 9b014a8: Follow the contracts event correlation fields
+
+  The client carries no code change: the status and engagement events it dispatches now expose the new nullable fields from the contracts package.
+
+- Updated dependencies [9b014a8]
+  - @deegitalbe/laravel-trustup-io-notifications-contracts@3.12.0
+
 ## 1.0.16
 
 ### Patch Changes

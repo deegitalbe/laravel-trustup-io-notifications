@@ -161,6 +161,11 @@ Event::listen(TrustupIoNotificationStatusReceived::class, function ($event) {
     $event->payload->status;         // NotificationStatus: pending|sent|delivered|error
     $event->payload->type;           // NotificationType
     $event->payload->data;           // hydrated NotificationData
+    $event->payload->eventId;        // ?string
+    $event->payload->sendEventId;    // ?string, unique per stored event, use it to deduplicate
+    $event->payload->occurredAt;     // ?string, ISO 8601
+    $event->payload->kind;           // ?ChannelEventKind, null for lifecycle statuses
+    $event->payload->failureReason;  // ?string
 });
 
 Event::listen(TrustupIoNotificationEngagementReceived::class, function ($event) {
@@ -168,10 +173,15 @@ Event::listen(TrustupIoNotificationEngagementReceived::class, function ($event) 
     $event->payload->clickedUrl;     // ?string (set for clicks)
     $event->payload->sendId;
     $event->payload->channel;
+    $event->payload->eventId;        // ?string
+    $event->payload->sendEventId;    // ?string
+    $event->payload->occurredAt;     // ?string, ISO 8601
 });
 ```
 
 The package defines **no listeners of its own** by design: it emits the events, your app decides what to do (update a local model, alert on bounce, track engagement, ...). Register as many listeners as you want, on either event. Dispatching with zero listeners is a no-op, not an error.
+
+The service publishes one status message per stored channel event, even when the canonical status does not change. A listener can therefore receive several `TrustupIoNotificationStatusReceived` events with the same `status` for one send. The new fields are nullable: messages produced before they existed still decode, with `null` values.
 
 `StatusPayload` and `EngagementPayload` shapes are documented in the contracts README.
 
